@@ -1,16 +1,22 @@
 import pandas as pd
 
-def getData(csvFile : str):
-    df = pd.read_csv(csvFile)
-    
-    date = df['Date'].tolist()
-    close = df['Close'].tolist()
+def getData(csvFile : str) -> tuple[list[str], list[str]]:
+    close = []
+    date = []
+    with open(csvFile, 'r') as file:
+        content = file.readlines()
+        content.pop(0) #Removes the first line
+        
+        for line in content:
+            line = line.split(",")
+            date.append(line[0].strip())
+            close.append(line[4].strip())
 
-    return (date, close)
+    return date, close
+    
 
 def main():
-    csvFile = "GjF_OneYear.csv"
-    date, close = getData(csvFile)
+    print(getData("GjF_OneYear.csv"))
     return
 
 
