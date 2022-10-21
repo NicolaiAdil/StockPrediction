@@ -70,7 +70,7 @@ def prepare_dataset(csvFileName, steps, percent):
 
 
 #Here we train the model with tensorflow, fit the model to our data and then evaluate the results with plots
-def train_model(csvFileName, steps, epochs=100, percent=80):
+def train_model(csvFileName, steps, set_epochs=100, percent=80):
     #Training the model
 
     model = Sequential()
@@ -84,7 +84,7 @@ def train_model(csvFileName, steps, epochs=100, percent=80):
     #Fit the model to our training and testing data
     x_train, y_train, x_test, y_test = prepare_dataset(csvFileName, steps, percent)
 
-    model.fit(x_train,y_train, validation_data=(x_test,y_test), epochs=200, batch_size=64, verbose=1)
+    model.fit(x_train,y_train, validation_data=(x_test,y_test), epochs=set_epochs, batch_size=64, verbose=1)
 
     #Evaluating the model
     train_predict = model.predict(x_train)
@@ -97,28 +97,31 @@ def train_model(csvFileName, steps, epochs=100, percent=80):
 
     look_back_steps = steps
 
-    dataset = scale_data(csvFileName) #The original stock-prize dataset
+    #Reformat the orginial training data
+    dataframeNew = import_csv(csvFileName)
+    scaler = StandardScaler()
+    dataframeNew = scaler.fit_transform(np.array(dataframeNew).reshape(-1,1)) #Squashes the values to [-1,1]
 
-    trainPredictionPlot = np.empty_like(dataset)
+    trainPredictionPlot = np.empty_like(dataframeNew)
     trainPredictionPlot[:,:]=np.nan
     trainPredictionPlot[look_back_steps:len(train_predict)+look_back_steps,:]=train_predict
 
-    testPredictionPlot = np.empty_like(dataset)
+    testPredictionPlot = np.empty_like(dataframeNew)
     testPredictionPlot[:,:] = np.nan
-    testPredictionPlot[len(train_predict)+(look_back_steps*2)+1:len(dataset)-1,:]=test_predict
+    testPredictionPlot[len(train_predict)+(look_back_steps*2)+1:len(dataframeNew)-1,:]=test_predict
 
-    #Creating the plots
-    plt.plot(scale_data(csvFileName))
-    plt.plot(trainPredictionPlot)
-    plt.plot(testPredictionPlot)
+    #Creating the plots and formats back to stockprizes
+    plt.plot(scaler.inverse_transform(dataframeNew)) 
+    plt.plot(scaler.inverse_transform(trainPredictionPlot))
+    plt.plot(scaler.inverse_transform(testPredictionPlot))
     plt.show()
 
-file = 'GjF.csv'
+file = 'GJF.csv'
 steps = 20
-epochs = 200
-percent_training_data = 80
+epochs = 20
+percent_training_data = 75
 
-train_model('GjF.csv', 20, 200, 80)
+train_model(file, steps, epochs, percent_training_data)
 
 
 
