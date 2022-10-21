@@ -1,5 +1,16 @@
+import pandas as pd
+
+def getData(csvFile : str):
+    df = pd.read_csv(csvFile)
+    
+    date = df['Date'].tolist()
+    close = df['Close'].tolist()
+
+    return (date, close)
+
 def main():
-    #Main logic
+    csvFile = "GjF_OneYear.csv"
+    date, close = getData(csvFile)
     return
 
 
