@@ -70,8 +70,7 @@ def prepare_dataset(csvFileName, steps, percent):
 
 
 #Here we train the model with tensorflow, fit the model to our data and then evaluate the results with plots
-
-def train_model(csvFileName, steps,epochs=100):
+def train_model(csvFileName, steps, epochs=100, percent=80):
     #Training the model
 
     model = Sequential()
@@ -82,23 +81,12 @@ def train_model(csvFileName, steps,epochs=100):
     model.add(Dense(1))
     model.compile(loss='mean_squared_error', optimizer ='rmsprop')
 
-    # model.summary()
-
-#     return model
-
-# #Fit the model to our training and testing data
-# def fit_model(csvFileName):
-    x_train, y_train, x_test, y_test = prepare_dataset(csvFileName, steps, 80)
-    # model = train_model()
+    #Fit the model to our training and testing data
+    x_train, y_train, x_test, y_test = prepare_dataset(csvFileName, steps, percent)
 
     model.fit(x_train,y_train, validation_data=(x_test,y_test), epochs=200, batch_size=64, verbose=1)
-#     return model
 
-# #Evaluating the model
-# def evaluate_model(csvFileName):
-    # x_train, y_train, x_test, y_test = prepare_dataset(csvFileName)
-    # model = fit_model(csvFileName)
-
+    #Evaluating the model
     train_predict = model.predict(x_train)
     test_predict = model.predict(x_test)
 
@@ -125,7 +113,12 @@ def train_model(csvFileName, steps,epochs=100):
     plt.plot(testPredictionPlot)
     plt.show()
 
-train_model('GjF_OneYear.csv', 20, 200)
+file = 'GjF.csv'
+steps = 20
+epochs = 200
+percent_training_data = 80
+
+train_model('GjF.csv', 20, 200, 80)
 
 
 
