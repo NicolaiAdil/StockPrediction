@@ -12,25 +12,17 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense
 from tensorflow.keras.layers import LSTM
 
+#import and scale the data
+def import_data(csvFileName):
+    scaler = StandardScaler()
 
-
-#Import data fra CSV
-def import_csv(csvFileName):
+    #Imports data from csv file
     df = pd.read_csv(csvFileName) 
 
     dataframeNew = df.reset_index()['Close']
-
-    return dataframeNew
-
-#Scale the data
-def scale_data(csvFileName):
-    scaler = StandardScaler()
-
-    dataframeNew = import_csv(csvFileName)
-
     dataframeNew = scaler.fit_transform(np.array(dataframeNew).reshape(-1,1)) #Squashes the values to [-1,1]
 
-    return dataframeNew
+    return dataframeNew, scaler
 
 #Create dataset for training and testing
 def create_dataset(dataset,time_step=1):
@@ -46,7 +38,7 @@ def create_dataset(dataset,time_step=1):
 
 #Preapare the training and testing datasets
 def prepare_dataset(csvFileName, steps, percent):
-    dataset = scale_data(csvFileName)
+    dataset = import_data(csvFileName)[0]
     #Separate training dataset and testing dataset
     train_size = int(len(dataset)*percent/100)
     test_size = len(dataset)-train_size
@@ -55,8 +47,8 @@ def prepare_dataset(csvFileName, steps, percent):
     testing_data = dataset[train_size:len(dataset),:1]
 
     #Create the datasets
+    
     timesteps = steps
-
     #Training data
     x_train, y_train = create_dataset(training_data,timesteps)
     #Testing data
@@ -97,15 +89,15 @@ def train_model(csvFileName, steps, set_epochs=100, percent=80):
 
     look_back_steps = steps
 
-    #Reformat the orginial training data
-    dataframeNew = import_csv(csvFileName)
-    scaler = StandardScaler()
-    dataframeNew = scaler.fit_transform(np.array(dataframeNew).reshape(-1,1)) #Squashes the values to [-1,1]
+    #The oroginal training data
+    dataframeNew,scaler = import_data(csvFileName)
 
+    #Training data
     trainPredictionPlot = np.empty_like(dataframeNew)
     trainPredictionPlot[:,:]=np.nan
     trainPredictionPlot[look_back_steps:len(train_predict)+look_back_steps,:]=train_predict
 
+    #Test data
     testPredictionPlot = np.empty_like(dataframeNew)
     testPredictionPlot[:,:] = np.nan
     testPredictionPlot[len(train_predict)+(look_back_steps*2)+1:len(dataframeNew)-1,:]=test_predict
@@ -116,12 +108,15 @@ def train_model(csvFileName, steps, set_epochs=100, percent=80):
     plt.plot(scaler.inverse_transform(testPredictionPlot))
     plt.show()
 
-file = 'GJF.csv'
-steps = 20
-epochs = 20
-percent_training_data = 75
+def main():
+    fileName = 'GJF.csv'
+    steps = 20
+    iterations = 5
+    percent_training_data = 75
 
-train_model(file, steps, epochs, percent_training_data)
+    train_model(fileName, steps, iterations, percent_training_data)
+
+main()
 
 
 
