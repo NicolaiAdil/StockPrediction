@@ -61,10 +61,9 @@ def prepare_dataset(csvFileName, steps, percent):
     return x_train, y_train, x_test, y_test
 
 
-#Here we train the model with tensorflow, fit the model to our data and then evaluate the results with plots
+#Here we train the model with tensorflow, fit the model to our data and evaluate the results
 def train_model(csvFileName, steps, set_epochs=100, percent=80):
     #Training the model
-
     model = Sequential()
 
     model.add(LSTM(50,return_sequences=True, input_shape=(steps,1)))
@@ -85,36 +84,77 @@ def train_model(csvFileName, steps, set_epochs=100, percent=80):
     math.sqrt(mean_squared_error(y_train,train_predict))
     math.sqrt(mean_squared_error(y_test,test_predict))
 
+    return train_predict, test_predict, model, x_train, y_train
+
+#Predicts future values using our model
+def predict_future(csvFileName, steps, days_in_future, set_epochs=100, percent=80):
+    model, x_train, y_train = train_model(csvFileName, steps, set_epochs, percent)[2:5]
+
+    y_future = []
+
+    x_pred = x_train[-1:, :, :]
+    y_pred = y_train[-1]
+
+    #Continuosly predicts new values based on previous ones
+    for i in range(days_in_future):
+        x_pred = np.append(x_pred[:, 1:, :], y_pred.reshape(1,1,1), axis=1)
+
+        y_pred = model.predict(x_pred)
+
+        y_future.append(y_pred.flatten()[0])
+
+    y_future = np.array(y_future).reshape(-1,1)
+
+    return  y_future
+
+def plot_results(csvFileName, steps, days_in_future, set_epochs=100, percent=80):
+    train_predict, test_predict = train_model(csvFileName, steps, set_epochs,percent)[0:2]
+    future_predict = predict_future(csvFileName, steps, days_in_future, set_epochs, percent)
+
     #Plotting the results of the model
 
     look_back_steps = steps
 
     #The oroginal training data
     dataframeNew,scaler = import_data(csvFileName)
+    dataframeNew = scaler.inverse_transform(dataframeNew)
 
     #Training data
     trainPredictionPlot = np.empty_like(dataframeNew)
     trainPredictionPlot[:,:]=np.nan
     trainPredictionPlot[look_back_steps:len(train_predict)+look_back_steps,:]=train_predict
+    trainPredictionPlot = scaler.inverse_transform(trainPredictionPlot)
 
     #Test data
     testPredictionPlot = np.empty_like(dataframeNew)
     testPredictionPlot[:,:] = np.nan
     testPredictionPlot[len(train_predict)+(look_back_steps*2)+1:len(dataframeNew)-1,:]=test_predict
+    testPredictionPlot = scaler.inverse_transform(testPredictionPlot)
+
+    #Future prediction data
+    futurePredictionPlot = np.empty_like(dataframeNew)
+    futurePredictionPlot[:,:] = np.nan
+    futurePredictionPlot[len(train_predict)+look_back_steps*2+1:len(future_predict)+len(train_predict)+look_back_steps*2+1,:]=future_predict
+    futurePredictionPlot = scaler.inverse_transform(futurePredictionPlot)
 
     #Creating the plots and formats back to stockprizes
-    plt.plot(scaler.inverse_transform(dataframeNew)) 
-    plt.plot(scaler.inverse_transform(trainPredictionPlot))
-    plt.plot(scaler.inverse_transform(testPredictionPlot))
+    plt.plot(dataframeNew) 
+    plt.plot(trainPredictionPlot)
+    plt.plot(testPredictionPlot)
+    plt.plot(futurePredictionPlot)
     plt.show()
+
+
+
 
 def main():
     fileName = 'GJF.csv'
     steps = 20
     iterations = 5
+    days_to_predict = 700
     percent_training_data = 75
 
-    train_model(fileName, steps, iterations, percent_training_data)
+    plot_results(fileName, steps, days_to_predict, iterations, percent_training_data)
 
 main()
 
