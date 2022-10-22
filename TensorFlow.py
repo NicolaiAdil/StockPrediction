@@ -101,7 +101,7 @@ def predict_future(csvFileName, steps, days_in_future, set_epochs=100, percent=8
 
         y_pred = model.predict(x_pred)
 
-        y_future.append(y_pred.flatten()[0])
+        y_future.append(y_pred[-1])
 
     y_future = np.array(y_future).reshape(-1,1)
 
@@ -134,7 +134,7 @@ def plot_results(csvFileName, steps, days_in_future, set_epochs=100, percent=80)
     #Future prediction data
     futurePredictionPlot = np.empty_like(dataframeNew)
     futurePredictionPlot[:,:] = np.nan
-    futurePredictionPlot[len(train_predict)+look_back_steps*2+1:len(future_predict)+len(train_predict)+look_back_steps*2+1,:]=future_predict
+    futurePredictionPlot[len(train_predict)+look_back_steps:len(future_predict)+len(train_predict)+look_back_steps,:]=future_predict
     futurePredictionPlot = scaler.inverse_transform(futurePredictionPlot)
 
     #Creating the plots and formats back to stockprizes
@@ -151,8 +151,8 @@ def main():
     fileName = 'GJF.csv'
     steps = 20
     iterations = 5
-    days_to_predict = 700
-    percent_training_data = 75
+    days_to_predict = 70
+    percent_training_data = 70
 
     plot_results(fileName, steps, days_to_predict, iterations, percent_training_data)
 
