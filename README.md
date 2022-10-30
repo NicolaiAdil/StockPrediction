@@ -24,5 +24,5 @@ pip3 install -r requirements.txt
 
 Then you should be able to run
 ```
-python3 TensorFlow.py
+python3 main.py
 ```
