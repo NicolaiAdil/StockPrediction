@@ -12,6 +12,7 @@ python3 -m venv .bvenv
 ```
 
 3. Source the environment
+
 Linux:
 ```
 source .bvenv/bin/activate
