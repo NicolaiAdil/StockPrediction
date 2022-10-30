@@ -1,5 +1,5 @@
 # StockPredictionLinearRegression
-Linear regression model for predicting a stocks closing price using LSTM
+Predicting a stocks closing price using LSTM
 
 ## Intalling
 
