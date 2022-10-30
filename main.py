@@ -148,7 +148,7 @@ def plot_results(csvFileName, steps, days_in_future, set_epochs=100, percent=80)
 
 
 def main():
-    fileName = 'GJF.csv'
+    fileName = 'csvfiles/GJF.csv'
     steps = 20
     iterations = 5
     days_to_predict = 70
@@ -156,7 +156,9 @@ def main():
 
     plot_results(fileName, steps, days_to_predict, iterations, percent_training_data)
 
-main()
+
+if __name__ == "__main__":
+    main()
 
 
 
