@@ -13,11 +13,11 @@ python3 -m venv .bvenv
 
 3. Source the environment
 
-Linux:
+<em>Linux:</em>
 ```
 source .bvenv/bin/activate
 ```
-Windows:
+<em>Windows:</em>
 ```
 source .bvenv/Scripts/activate
 ```
