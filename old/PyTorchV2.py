@@ -15,7 +15,7 @@ sns.set()
 tf.compat.v1.random.set_random_seed(1234)
 
 #/ LOCAL FILES /#
-from Linear_Regression import getData
+from old.Linear_Regression import getData
 
 #Get the data from csv file
 df = pd.read_csv('GjF_OneYear.csv')

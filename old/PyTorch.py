@@ -5,7 +5,7 @@ from torch.autograd import Variable
 import matplotlib as plt
 
 #/ LOCAL FILES /#
-from Linear_Regression import getData
+from old.Linear_Regression import getData
 
 #Creates a linear regression class that inherits from the torch.nn.Module class
 class linearRegression(torch.nn.Module):
