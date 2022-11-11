@@ -2,6 +2,10 @@ import yfinance as yf
 import matplotlib.pyplot as plt
 import numpy as np
 from pandas_datareader import data as pdr
+import os, uuid
+
+from azure.identity import DefaultAzureCredential
+from azure.storage.blob import BlobServiceClient, BlobClient, ContainerClient
 
 GJF = yf.download("GJF.OL", period="max")
 GJF_close = GJF['Close']
