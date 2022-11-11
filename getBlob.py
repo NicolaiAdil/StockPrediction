@@ -1,12 +1,12 @@
 from azure.storage.blob import BlobServiceClient
 import pandas as pd
+from Credentials import storageaccounturl, storageaccountkey, containername, blobname
 
-STORAGEACCOUNTURL= "https://stockpredictio5203052435.blob.core.windows.net"
-STORAGEACCOUNTKEY= "IEZDxzg3RoO8wxbWphz70pwGQbpIk+0UWky0iC3YvBXAvBinrKIZpI3wuzNK3vqzCueCnvKHVzx/+AStF2KCEQ=="
-#STORAGEACCOUNTKEY = "sp=r&st=2022-11-11T10:32:12Z&se=2022-11-11T18:32:12Z&spr=https&sv=2021-06-08&sr=c&sig=2t6gPYD8ofMgTUdQDfE7iTsobgiiGF6A2nKbJCetsQ8%3D"
+STORAGEACCOUNTURL= storageaccounturl
+STORAGEACCOUNTKEY= storageaccountkey
 LOCALFILENAME= "localfile.csv"
-CONTAINERNAME= "predictionfiles"
-BLOBNAME= "ds.csv"
+CONTAINERNAME= containername
+BLOBNAME= blobname
 
 #download from blob
 # t1=time.time()
