@@ -1,4 +1,5 @@
 import pandas as pd
+from pandas_datareader import data as pdr
 import matplotlib.pyplot as plt
 import numpy as np
 import math
@@ -12,12 +13,19 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense
 from tensorflow.keras.layers import LSTM
 
+#Yahoo finance API
+import yfinance as yf
+
 #import and scale the data
-def import_data(csvFileName):
+def import_data(csvFileName, stockName):
     scaler = StandardScaler()
 
     #Imports data from csv file
-    df = pd.read_csv(csvFileName) 
+    # df = pd.read_csv(csvFileName) 
+
+    #Import data directly from yahoo finance with yfinance
+    yf.pdr_override()
+    df = pdr.get_data_yahoo(stockName, period="max")
 
     dataframeNew = df.reset_index()['Close']
     dataframeNew = scaler.fit_transform(np.array(dataframeNew).reshape(-1,1)) #Squashes the values to [-1,1]
@@ -37,8 +45,8 @@ def create_dataset(dataset,time_step=1):
     return np.array(dataX), np.array(dataY)
 
 #Preapare the training and testing datasets
-def prepare_dataset(csvFileName, steps, percent):
-    dataset = import_data(csvFileName)[0]
+def prepare_dataset(csvFileName, steps, percent, stockName):
+    dataset = import_data(csvFileName,stockName)[0]
     #Separate training dataset and testing dataset
     train_size = int(len(dataset)*percent/100)
     test_size = len(dataset)-train_size
@@ -62,7 +70,7 @@ def prepare_dataset(csvFileName, steps, percent):
 
 
 #Here we train the model with tensorflow, fit the model to our data and evaluate the results
-def train_model(csvFileName, steps, set_epochs=100, percent=80):
+def train_model(csvFileName, steps, stockName, set_epochs=100, percent=80):
     #Training the model
     model = Sequential()
 
@@ -73,7 +81,7 @@ def train_model(csvFileName, steps, set_epochs=100, percent=80):
     model.compile(loss='mean_squared_error', optimizer ='rmsprop')
 
     #Fit the model to our training and testing data
-    x_train, y_train, x_test, y_test = prepare_dataset(csvFileName, steps, percent)
+    x_train, y_train, x_test, y_test = prepare_dataset(csvFileName, steps, percent, stockName)
 
     model.fit(x_train,y_train, validation_data=(x_test,y_test), epochs=set_epochs, batch_size=64, verbose=1)
 
@@ -87,10 +95,8 @@ def train_model(csvFileName, steps, set_epochs=100, percent=80):
     return train_predict, test_predict, model, x_train, y_train
 
 #Predicts future values using our model
-def predict_future(csvFileName, steps, days_in_future, set_epochs=100, percent=80):
-    model, x_train, y_train = train_model(csvFileName, steps, set_epochs, percent)[2:5]
-
-    y_future = []
+def predict_future(csvFileName, steps, days_in_future, stockName, model, x_train, y_train, set_epochs=100, percent=80):
+    y_future = [y_train[-1]]
 
     x_pred = x_train[-1:, :, :]
     y_pred = y_train[-1]
@@ -107,16 +113,16 @@ def predict_future(csvFileName, steps, days_in_future, set_epochs=100, percent=8
 
     return  y_future
 
-def plot_results(csvFileName, steps, days_in_future, set_epochs=100, percent=80):
-    train_predict, test_predict = train_model(csvFileName, steps, set_epochs,percent)[0:2]
-    future_predict = predict_future(csvFileName, steps, days_in_future, set_epochs, percent)
+def plot_results(csvFileName, steps, days_in_future, stockName, set_epochs=100, percent=80):
+    train_predict, test_predict, model, x_train, y_train = train_model(csvFileName, steps, stockName, set_epochs,percent)
+    future_predict = predict_future(csvFileName, steps, days_in_future, stockName, model, x_train, y_train, set_epochs, percent)
 
     #Plotting the results of the model
 
     look_back_steps = steps
 
     #The oroginal training data
-    dataframeNew,scaler = import_data(csvFileName)
+    dataframeNew,scaler = import_data(csvFileName, stockName)
     dataframeNew = scaler.inverse_transform(dataframeNew)
 
     #Training data
@@ -138,23 +144,26 @@ def plot_results(csvFileName, steps, days_in_future, set_epochs=100, percent=80)
     futurePredictionPlot = scaler.inverse_transform(futurePredictionPlot)
 
     #Creating the plots and formats back to stockprizes
-    plt.plot(dataframeNew) 
-    plt.plot(trainPredictionPlot)
-    plt.plot(testPredictionPlot)
-    plt.plot(futurePredictionPlot)
+    plt.plot(dataframeNew, label = "data") 
+    plt.plot(trainPredictionPlot, label = "training data")
+    plt.plot(testPredictionPlot, label = "test data")
+    plt.plot(futurePredictionPlot, label = "prediction")
+    plt.legend()
     plt.show()
-
-
 
 
 def main():
     fileName = 'GJF.csv'
-    steps = 20
-    iterations = 5
-    days_to_predict = 70
-    percent_training_data = 70
+    steps = 50
+    iterations = 3
+    days_to_predict = 10
+    percent_training_data = 80
 
-    plot_results(fileName, steps, days_to_predict, iterations, percent_training_data)
+    stockName1 = "GJF.OL"
+    stockName2 = "STB.OL"
+
+    plot_results(fileName, steps, days_to_predict, stockName1, iterations, percent_training_data)
+    plot_results(fileName, steps, days_to_predict, stockName2, iterations, percent_training_data)
 
 main()
 
